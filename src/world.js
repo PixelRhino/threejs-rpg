@@ -12,19 +12,59 @@ export class World extends THREE.Mesh {
         this.rockCount = 20;
         this.bushCount = 10;
 
+        this.trees = new THREE.Group();
+        this.rocks = new THREE.Group();
+        this.bushes = new THREE.Group();
+        this.add(this.trees);
+        this.add(this.rocks);
+        this.add(this.bushes);
+
+        this.generate();
+    }
+
+    generate() {
+        this.clear();
         this.createTerrain();
         this.createTrees();
         this.createRocks();
         this.createBushes();
     }
 
-    createTerrain() {
+    clear() {
         if (this.terrain) {
-            this.terrain.geometry.dispose();
-            this.terrain.material.dispose();
+            this.terrain.geometry?.dispose();
+            this.terrain.material?.dispose();
             this.remove(this.terrain);
         }
 
+        if (this.trees) {
+            this.trees.children.forEach((child) => {
+                child.geometry?.dispose();
+                child.material?.dispose();
+            });
+            this.trees.clear();
+        }
+
+        if (this.rocks) {
+            this.rocks.children.forEach((child) => {
+                child.geometry?.dispose();
+                child.material?.dispose();
+            });
+            this.rocks.clear();
+        }
+
+        if (this.bushes) {
+            this.bushes.children.forEach((child) => {
+                child.geometry?.dispose();
+                child.material?.dispose();
+            });
+            this.bushes.clear();
+        }
+
+        this.#objectMap.clear();
+    }
+
+    createTerrain() {
         const terrainGeometry = new THREE.PlaneGeometry(
             this.width,
             this.height,
@@ -53,16 +93,12 @@ export class World extends THREE.Mesh {
             flatShading: true,
         });
 
-        this.trees = new THREE.Group();
-        this.add(this.trees);
-
         for (let i = 0; i < this.treeCount; i++) {
             const position = new THREE.Vector2(
                 Math.floor(this.width * Math.random()),
                 Math.floor(this.height * Math.random())
             );
             if (this.#objectMap.has(`${position.x},${position.y}`)) {
-                i--;
                 continue;
             }
 
@@ -89,16 +125,12 @@ export class World extends THREE.Mesh {
             flatShading: true,
         });
 
-        this.rocks = new THREE.Group();
-        this.add(this.rocks);
-
         for (let i = 0; i < this.rockCount; i++) {
             const position = new THREE.Vector2(
                 Math.floor(this.width * Math.random()),
                 Math.floor(this.height * Math.random())
             );
             if (this.#objectMap.has(`${position.x},${position.y}`)) {
-                i--;
                 continue;
             }
 
@@ -127,16 +159,12 @@ export class World extends THREE.Mesh {
             flatShading: true,
         });
 
-        this.bushes = new THREE.Group();
-        this.add(this.bushes);
-
         for (let i = 0; i < this.bushCount; i++) {
             const position = new THREE.Vector2(
                 Math.floor(this.width * Math.random()),
                 Math.floor(this.height * Math.random())
             );
             if (this.#objectMap.has(`${position.x},${position.y}`)) {
-                i--;
                 continue;
             }
 

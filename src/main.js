@@ -53,14 +53,9 @@ function onWindowResize() {
 }
 
 const worldFolder = gui.addFolder('World');
-worldFolder.add(world, 'width', 1, 100, 1).name('Width');
-worldFolder.add(world, 'height', 1, 100, 1).name('Height');
-worldFolder.onChange(function () {
-    world.createTerrain();
-    world.trees.clear();
-    world.rocks.clear();
-    world.bushes.clear();
-    world.createTrees();
-    world.createRocks();
-    world.createBushes();
-});
+worldFolder.add(world, 'width', 1, 25, 1).name('Width');
+worldFolder.add(world, 'height', 1, 25, 1).name('Height');
+worldFolder.add(world, 'treeCount', 1, 50, 1).name('Tree Count');
+worldFolder.add(world, 'rockCount', 1, 50, 1).name('Rock Count');
+worldFolder.add(world, 'bushCount', 1, 50, 1).name('Bush Count');
+worldFolder.add(world, 'generate');
