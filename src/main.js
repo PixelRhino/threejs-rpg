@@ -32,7 +32,7 @@ const camera = new PerspectiveCamera(
 
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.target.set(5, 0, 5);
-camera.position.set(0, 2, 0);
+camera.position.set(2, 7, 2);
 controls.update();
 
 const world = new World(10, 10);

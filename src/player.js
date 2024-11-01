@@ -4,6 +4,7 @@ import {
     CapsuleGeometry,
     MeshStandardMaterial,
     Vector2,
+    SphereGeometry,
 } from 'three';
 import { Pathfinder } from './pathfinder';
 
@@ -54,13 +55,31 @@ export class Player extends Mesh {
                 Math.floor(intersects[0].point.z)
             );
 
-            Pathfinder.search(selectedPosition, playerPosition, this.world);
-
-            this.position.set(
-                selectedPosition.x + 0.5,
-                0.5,
-                selectedPosition.y + 0.5
+            let path = Pathfinder.search(
+                playerPosition,
+                selectedPosition,
+                this.world
             );
+
+            this.world.path.clear();
+            if (path) {
+                for (let i = 0; i < path.length; i++) {
+                    const pathPosition = path[i];
+                    const sphere = new Mesh(
+                        new SphereGeometry(0.1, 8, 8),
+                        new MeshStandardMaterial({
+                            color: 0xff0000,
+                            flatShading: true,
+                        })
+                    );
+                    sphere.position.set(
+                        pathPosition.x + 0.5,
+                        0,
+                        pathPosition.y + 0.5
+                    );
+                    this.world.path.add(sphere);
+                }
+            }
         }
     }
 }

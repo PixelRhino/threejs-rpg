@@ -33,6 +33,9 @@ export class World extends Group {
         this.add(this.rocks);
         this.add(this.bushes);
 
+        this.path = new Group();
+        this.add(this.path);
+
         this.generate();
     }
 

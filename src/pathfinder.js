@@ -12,27 +12,32 @@ export class Pathfinder {
      */
     static search(start, end, world) {
         if (start.equals(end)) {
-            console.log('start and end are the same');
-            return [];
+            return null;
         }
 
-        const visited = new Set();
-        const frontier = [start];
+        let pathFound = false;
         const maxDistance = 20;
-        let endFound = false;
+
+        const backTrack = new Map();
+        const frontier = [start];
+        const cost = new Map();
+        cost.set(getKey(start), 0);
 
         while (frontier.length > 0) {
             frontier.sort((v1, v2) => {
-                const d1 = start.manhattanDistanceTo(v1);
-                const d2 = start.manhattanDistanceTo(v2);
-                return d1 - d2;
+                const g1 = start.manhattanDistanceTo(v1);
+                const g2 = start.manhattanDistanceTo(v2);
+                const h1 = v1.manhattanDistanceTo(end);
+                const h2 = v2.manhattanDistanceTo(end);
+                const f1 = g1 + h1;
+                const f2 = g2 + h2;
+                return f1 - f2;
             });
 
             const candidate = frontier.shift();
-            visited.add(getKey(candidate));
 
             if (candidate.equals(end)) {
-                endFound = true;
+                pathFound = true;
                 break;
             }
 
@@ -41,20 +46,45 @@ export class Pathfinder {
             }
 
             const neighbors = this.getNeighbors(candidate, world);
+            const newCost = cost.get(getKey(candidate)) + 1;
             for (let i = 0; i < neighbors.length; i++) {
-                if (visited.has(getKey(neighbors[i]))) {
+                if (
+                    cost.has(getKey(neighbors[i])) &&
+                    newCost >= cost.get(getKey(neighbors[i]))
+                ) {
                     continue;
                 }
+
+                cost.set(getKey(neighbors[i]), newCost);
+
                 const hasObject = world.getObject(neighbors[i]);
                 if (hasObject) {
                     continue;
                 }
 
                 frontier.push(neighbors[i]);
+                backTrack.set(getKey(neighbors[i]), candidate);
             }
         }
 
-        console.log(endFound);
+        if (!pathFound) {
+            return null;
+        }
+
+        let current = end;
+        const path = [current];
+
+        const startKey = getKey(start);
+
+        while (getKey(current) !== startKey) {
+            const prev = backTrack.get(getKey(current));
+            path.push(prev);
+            current = prev;
+        }
+        path.reverse();
+        path.shift();
+
+        return path;
     }
 
     /**
