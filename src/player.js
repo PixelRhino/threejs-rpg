@@ -5,12 +5,23 @@ import {
     MeshStandardMaterial,
     Vector2,
     SphereGeometry,
+    Camera,
 } from 'three';
 import { Pathfinder } from './pathfinder';
+import { World } from './world';
 
 export class Player extends Mesh {
     raycaster = new Raycaster();
 
+    path = [];
+    pathIndex = 0;
+    pathUpdater = null;
+
+    /**
+     *
+     * @param {Camera} camera
+     * @param {World} world
+     */
     constructor(camera, world) {
         super();
 
@@ -55,31 +66,62 @@ export class Player extends Mesh {
                 Math.floor(intersects[0].point.z)
             );
 
-            let path = Pathfinder.search(
+            clearInterval(this.pathUpdater);
+
+            this.path = Pathfinder.search(
                 playerPosition,
                 selectedPosition,
                 this.world
             );
 
             this.world.path.clear();
-            if (path) {
-                for (let i = 0; i < path.length; i++) {
-                    const pathPosition = path[i];
-                    const sphere = new Mesh(
-                        new SphereGeometry(0.1, 8, 8),
-                        new MeshStandardMaterial({
-                            color: 0xff0000,
-                            flatShading: true,
-                        })
-                    );
-                    sphere.position.set(
-                        pathPosition.x + 0.5,
-                        0,
-                        pathPosition.y + 0.5
-                    );
-                    this.world.path.add(sphere);
-                }
+
+            if (!this.path || this.path.length === 0) {
+                return;
             }
+
+            for (let i = 0; i < this.path.length; i++) {
+                const pathPosition = this.path[i];
+                const sphere = new Mesh(
+                    new SphereGeometry(0.1, 8, 8),
+                    new MeshStandardMaterial({
+                        color: 0xff0000,
+                        flatShading: true,
+                    })
+                );
+                sphere.position.set(
+                    pathPosition.x + 0.5,
+                    0,
+                    pathPosition.y + 0.5
+                );
+                this.world.path.add(sphere);
+            }
+
+            this.pathIndex = 0;
+            this.pathUpdater = setInterval(this.updatePosition.bind(this), 50);
+        }
+    }
+
+    updatePosition() {
+        if (this.pathIndex === this.path.length) {
+            clearInterval(this.pathUpdater);
+            this.pathUpdater = null;
+            return;
+        }
+
+        const currentPosition = this.path[this.pathIndex];
+        const targetX = currentPosition.x + 0.5;
+        const targetZ = currentPosition.y + 0.5;
+
+        const speed = 0.8;
+        const dx = targetX - this.position.x;
+        const dz = targetZ - this.position.z;
+
+        this.position.x += Math.sign(dx) * Math.min(Math.abs(dx), speed);
+        this.position.z += Math.sign(dz) * Math.min(Math.abs(dz), speed);
+
+        if (Math.abs(dx) < 0.01 && Math.abs(dz) < 0.01) {
+            this.pathIndex++;
         }
     }
 }
