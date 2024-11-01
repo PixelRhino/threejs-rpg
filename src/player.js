@@ -26,6 +26,13 @@ export class Player extends Mesh {
         window.addEventListener('pointerdown', this.onPointerDown.bind(this));
     }
 
+    getXZPosition() {
+        return new Vector2(
+            Math.floor(this.position.x),
+            Math.floor(this.position.z)
+        );
+    }
+
     /**
      *
      * @param {PointerEvent} event
@@ -40,17 +47,20 @@ export class Player extends Mesh {
         const intersects = this.raycaster.intersectObject(this.world.terrain);
 
         if (intersects.length > 0) {
+            const playerPosition = this.getXZPosition();
+
             const selectedPosition = new Vector2(
                 Math.floor(intersects[0].point.x),
                 Math.floor(intersects[0].point.z)
             );
+
+            Pathfinder.search(selectedPosition, playerPosition, this.world);
+
             this.position.set(
                 selectedPosition.x + 0.5,
                 0.5,
                 selectedPosition.y + 0.5
             );
-
-            Pathfinder.search(selectedPosition, null, this.world);
         }
     }
 }
