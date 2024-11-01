@@ -1,13 +1,12 @@
-import { Vector2 } from 'three';
+import { Vector2, Vector3 } from 'three';
 import { World } from './world';
-
-const getKey = (position) => `${position.x},${position.y}`;
+import { getVec3Key } from './utils';
 
 export class Pathfinder {
     /**
      *
-     * @param {Vector2} start
-     * @param {Vector2} end
+     * @param {Vector3} start
+     * @param {Vector3} end
      * @param {World} world
      */
     static search(start, end, world) {
@@ -21,7 +20,7 @@ export class Pathfinder {
         const backTrack = new Map();
         const frontier = [start];
         const cost = new Map();
-        cost.set(getKey(start), 0);
+        cost.set(getVec3Key(start), 0);
 
         while (frontier.length > 0) {
             frontier.sort((v1, v2) => {
@@ -46,16 +45,16 @@ export class Pathfinder {
             }
 
             const neighbors = this.getNeighbors(candidate, world);
-            const newCost = cost.get(getKey(candidate)) + 1;
+            const newCost = cost.get(getVec3Key(candidate)) + 1;
             for (let i = 0; i < neighbors.length; i++) {
                 if (
-                    cost.has(getKey(neighbors[i])) &&
-                    newCost >= cost.get(getKey(neighbors[i]))
+                    cost.has(getVec3Key(neighbors[i])) &&
+                    newCost >= cost.get(getVec3Key(neighbors[i]))
                 ) {
                     continue;
                 }
 
-                cost.set(getKey(neighbors[i]), newCost);
+                cost.set(getVec3Key(neighbors[i]), newCost);
 
                 const hasObject = world.getObject(neighbors[i]);
                 if (hasObject) {
@@ -63,7 +62,7 @@ export class Pathfinder {
                 }
 
                 frontier.push(neighbors[i]);
-                backTrack.set(getKey(neighbors[i]), candidate);
+                backTrack.set(getVec3Key(neighbors[i]), candidate);
             }
         }
 
@@ -74,10 +73,10 @@ export class Pathfinder {
         let current = end;
         const path = [current];
 
-        const startKey = getKey(start);
+        const startKey = getVec3Key(start);
 
-        while (getKey(current) !== startKey) {
-            const prev = backTrack.get(getKey(current));
+        while (getVec3Key(current) !== startKey) {
+            const prev = backTrack.get(getVec3Key(current));
             path.push(prev);
             current = prev;
         }
@@ -89,30 +88,30 @@ export class Pathfinder {
 
     /**
      *
-     * @param {Vector2} position
+     * @param {Vector3} coords
      * @param {World} world
      */
-    static getNeighbors(position, world) {
+    static getNeighbors(coords, world) {
         const neighbors = [];
 
         // left
-        if (position.x > 0) {
-            neighbors.push(new Vector2(position.x - 1, position.y));
+        if (coords.x > 0) {
+            neighbors.push(new Vector3(coords.x - 1, 0, coords.z));
         }
 
         // right
-        if (position.x < world.width - 1) {
-            neighbors.push(new Vector2(position.x + 1, position.y));
+        if (coords.x < world.width - 1) {
+            neighbors.push(new Vector3(coords.x + 1, 0, coords.z));
         }
 
         // top
-        if (position.y > 0) {
-            neighbors.push(new Vector2(position.x, position.y - 1));
+        if (coords.z > 0) {
+            neighbors.push(new Vector3(coords.x, 0, coords.z - 1));
         }
 
         // bottom
-        if (position.y < world.height - 1) {
-            neighbors.push(new Vector2(position.x, position.y + 1));
+        if (coords.z < world.height - 1) {
+            neighbors.push(new Vector3(coords.x, 0, coords.z + 1));
         }
 
         return neighbors;

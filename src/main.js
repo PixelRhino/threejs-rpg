@@ -4,12 +4,14 @@ import {
     PerspectiveCamera,
     DirectionalLight,
     AmbientLight,
+    Vector3,
 } from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import Stats from 'three/examples/jsm/libs/stats.module.js';
 import { GUI } from 'three/examples/jsm/libs/lil-gui.module.min.js';
 import { World } from './world.js';
-import { Player } from './player.js';
+import { HumanPlayer } from './entities/HumanPlayer.js';
+import { CombatManager } from './CombatManager.js';
 
 const gui = new GUI();
 
@@ -38,8 +40,12 @@ controls.update();
 const world = new World(10, 10);
 scene.add(world);
 
-const player = new Player(camera, world);
+const player = new HumanPlayer(new Vector3(5, 0, 5), camera, world);
 scene.add(player);
+
+const combatManager = new CombatManager();
+combatManager.addPlayer(player);
+combatManager.takeTurns();
 
 const sun = new DirectionalLight();
 sun.intensity = 3;

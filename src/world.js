@@ -5,11 +5,14 @@ import {
     RepeatWrapping,
     SRGBColorSpace,
     PlaneGeometry,
-    ConeGeometry,
-    SphereGeometry,
     MeshStandardMaterial,
     Mesh,
+    Vector3,
 } from 'three';
+import { Bush } from './objects/Bush';
+import { Rock } from './objects/Rock';
+import { Tree } from './objects/Tree';
+import { getVec3Key } from './utils';
 
 const textureLoader = new TextureLoader();
 const gridTexture = textureLoader.load('textures/grid.png');
@@ -103,110 +106,56 @@ export class World extends Group {
     }
 
     createTrees() {
-        const treeRadius = 0.2;
-        const treeHeight = 1;
-
-        const treeGeometry = new ConeGeometry(treeRadius, treeHeight, 8);
-        const treeMaterial = new MeshStandardMaterial({
-            color: 0x305100,
-            flatShading: true,
-        });
-
         for (let i = 0; i < this.treeCount; i++) {
-            const position = new Vector2(
+            const coords = new Vector3(
                 Math.floor(this.width * Math.random()),
+                0,
                 Math.floor(this.height * Math.random())
             );
-            if (this.#objectMap.has(this.getObjectKey(position))) {
-                continue;
-            }
 
-            const treeMesh = new Mesh(treeGeometry, treeMaterial);
-            treeMesh.name = 'tree';
-
-            treeMesh.position.set(
-                position.x + 0.5,
-                treeHeight / 2,
-                position.y + 0.5
-            );
-            this.trees.add(treeMesh);
-            this.#objectMap.set(this.getObjectKey(position), treeMesh);
+            const tree = new Tree(coords);
+            this.addObject(tree, coords, this.trees);
         }
     }
 
     createRocks() {
-        const minRockRadius = 0.1;
-        const maxRockRadius = 0.3;
-        const minRockHeight = 0.4;
-        const maxRockHeight = 0.7;
-
-        const rockMaterial = new MeshStandardMaterial({
-            color: 0xb0b0b0,
-            flatShading: true,
-        });
-
         for (let i = 0; i < this.rockCount; i++) {
-            const position = new Vector2(
+            const coords = new Vector3(
                 Math.floor(this.width * Math.random()),
+                0,
                 Math.floor(this.height * Math.random())
             );
-            if (this.#objectMap.has(this.getObjectKey(position))) {
-                continue;
-            }
 
-            const radius =
-                Math.random() * (maxRockRadius - minRockRadius) + minRockRadius;
-            const height =
-                Math.random() * (maxRockHeight - minRockHeight) + minRockHeight;
-            const rockGeometry = new SphereGeometry(radius, 6, 5);
-
-            const rockMesh = new Mesh(rockGeometry, rockMaterial);
-            rockMesh.name = 'rock';
-
-            rockMesh.position.set(position.x + 0.5, 0, position.y + 0.5);
-            rockMesh.scale.y = height;
-
-            this.rocks.add(rockMesh);
-            this.#objectMap.set(this.getObjectKey(position), rockMesh);
+            const rock = new Rock(coords);
+            this.addObject(rock, coords, this.rocks);
         }
     }
 
     createBushes() {
-        const minBushRadius = 0.1;
-        const maxBushRadius = 0.3;
-
-        const bushMaterial = new MeshStandardMaterial({
-            color: 0x80a040,
-            flatShading: true,
-        });
-
         for (let i = 0; i < this.bushCount; i++) {
-            const position = new Vector2(
+            const coords = new Vector3(
                 Math.floor(this.width * Math.random()),
+                0,
                 Math.floor(this.height * Math.random())
             );
-            if (this.#objectMap.has(this.getObjectKey(position))) {
-                continue;
-            }
 
-            const radius =
-                Math.random() * (maxBushRadius - minBushRadius) + minBushRadius;
-            const bushGeometry = new SphereGeometry(radius, 8, 8);
-
-            const bushMesh = new Mesh(bushGeometry, bushMaterial);
-            bushMesh.name = 'bush';
-
-            bushMesh.position.set(position.x + 0.5, radius, position.y + 0.5);
-            this.bushes.add(bushMesh);
-            this.#objectMap.set(this.getObjectKey(position), bushMesh);
+            const bush = new Bush(coords);
+            this.addObject(bush, coords, this.bushes);
         }
     }
 
-    getObjectKey(position) {
-        return `${position.x},${position.y}`;
+    addObject(object, coords, group) {
+        if (this.#objectMap.has(getVec3Key(coords))) {
+            return false;
+        }
+
+        group.add(object);
+        this.#objectMap.set(getVec3Key(coords), object);
+
+        return true;
     }
 
-    getObject(position) {
-        return this.#objectMap.get(this.getObjectKey(position)) ?? null;
+    getObject(coords) {
+        return this.#objectMap.get(getVec3Key(coords)) ?? null;
     }
 }
