@@ -15,7 +15,7 @@ export class Player extends Mesh {
 
     path = [];
     pathIndex = 0;
-    pathUpdater = null;
+    moving = null;
 
     /**
      *
@@ -58,7 +58,7 @@ export class Player extends Mesh {
 
         const intersects = this.raycaster.intersectObject(this.world.terrain);
 
-        if (intersects.length > 0) {
+        if (intersects.length > 0 && !this.moving) {
             const playerPosition = this.getXZPosition();
 
             const selectedPosition = new Vector2(
@@ -66,46 +66,25 @@ export class Player extends Mesh {
                 Math.floor(intersects[0].point.z)
             );
 
-            clearInterval(this.pathUpdater);
-
             this.path = Pathfinder.search(
                 playerPosition,
                 selectedPosition,
                 this.world
             );
 
-            this.world.path.clear();
-
             if (!this.path || this.path.length === 0) {
                 return;
             }
 
-            for (let i = 0; i < this.path.length; i++) {
-                const pathPosition = this.path[i];
-                const sphere = new Mesh(
-                    new SphereGeometry(0.1, 8, 8),
-                    new MeshStandardMaterial({
-                        color: 0xff0000,
-                        flatShading: true,
-                    })
-                );
-                sphere.position.set(
-                    pathPosition.x + 0.5,
-                    0,
-                    pathPosition.y + 0.5
-                );
-                this.world.path.add(sphere);
-            }
-
             this.pathIndex = 0;
-            this.pathUpdater = setInterval(this.updatePosition.bind(this), 50);
+            this.moving = true;
+            requestAnimationFrame(this.updatePosition.bind(this));
         }
     }
 
     updatePosition() {
-        if (this.pathIndex === this.path.length) {
-            clearInterval(this.pathUpdater);
-            this.pathUpdater = null;
+        if (!this.path || this.pathIndex === this.path.length) {
+            this.moving = false;
             return;
         }
 
@@ -113,7 +92,7 @@ export class Player extends Mesh {
         const targetX = currentPosition.x + 0.5;
         const targetZ = currentPosition.y + 0.5;
 
-        const speed = 0.8;
+        const speed = 0.1;
         const dx = targetX - this.position.x;
         const dz = targetZ - this.position.z;
 
@@ -122,6 +101,10 @@ export class Player extends Mesh {
 
         if (Math.abs(dx) < 0.01 && Math.abs(dz) < 0.01) {
             this.pathIndex++;
+        }
+
+        if (this.moving) {
+            requestAnimationFrame(this.updatePosition.bind(this));
         }
     }
 }
