@@ -1,8 +1,8 @@
 import {
     Mesh,
     MeshStandardMaterial,
+    MeshToonMaterial,
     PlaneGeometry,
-    TextureLoader,
     Vector3,
 } from 'three';
 import GameEntity from '../entities/GameEntity';

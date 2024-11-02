@@ -1,4 +1,5 @@
 import { Texture, TextureLoader } from 'three';
+import { GLTF, GLTFLoader } from 'three/examples/jsm/Addons.js';
 
 class ResourceManager {
     // Singleton pattern
@@ -11,11 +12,44 @@ class ResourceManager {
 
     // resources
     private _groundTextures: Texture[] = [];
+    private _models = new Map<string, GLTF>();
+    private _textures = new Map<string, Texture>();
+
+    // public methods to access game resources
+    public getModel(modelName: string): GLTF | undefined {
+        return this._models.get(modelName);
+    }
+
+    public getTexture(textureName: string): Texture | undefined {
+        return this._textures.get(textureName);
+    }
 
     // load entry point
     public load = async () => {
         const textureLoader = new TextureLoader();
+
         await this.loadGroundTextures(textureLoader);
+        await this.loadTextures(textureLoader);
+        await this.loadGLTFModels();
+    };
+
+    private loadGLTFModels = async () => {
+        const modelLoader = new GLTFLoader();
+
+        const playerTank = await modelLoader.loadAsync('models/tank.glb');
+        this._models.set('tank', playerTank);
+    };
+
+    private loadTextures = async (textureLoader: TextureLoader) => {
+        const tankBodyTexture = await textureLoader.loadAsync(
+            'textures/tank-body.png'
+        );
+        const tankTurretTexture = await textureLoader.loadAsync(
+            'textures/tank-turret.png'
+        );
+
+        this._textures.set('tank-body', tankBodyTexture);
+        this._textures.set('tank-turret', tankTurretTexture);
     };
 
     private loadGroundTextures = async (textureLoader: TextureLoader) => {
