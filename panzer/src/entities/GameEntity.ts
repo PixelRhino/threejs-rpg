@@ -19,7 +19,7 @@ abstract class GameEntity {
 
     // methods
     public load = async () => {};
-    public update = () => {};
+    public update = (_dt: number) => {};
 }
 
 export default GameEntity;

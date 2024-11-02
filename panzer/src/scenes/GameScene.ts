@@ -1,5 +1,6 @@
 import {
     BoxGeometry,
+    Clock,
     HemisphereLight,
     Mesh,
     MeshBasicMaterial,
@@ -31,6 +32,8 @@ class GameScene {
 
     // game entities
     private _gameEntities: GameEntity[] = [];
+
+    private _clock: Clock = new Clock();
 
     // Private constructor to prevent instantiation
     private constructor() {
@@ -93,6 +96,15 @@ class GameScene {
     public render = () => {
         // Request the next frame
         requestAnimationFrame(this.render);
+
+        const dt = this._clock.getDelta();
+
+        // Update game entities
+        for (let index = 0; index < this._gameEntities.length; index++) {
+            const entity = this._gameEntities[index];
+            entity.update(dt);
+        }
+
         // Render the scene
         this._renderer.render(this._scene, this._camera);
     };
