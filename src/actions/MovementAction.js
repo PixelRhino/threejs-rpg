@@ -20,9 +20,23 @@ export class MovementAction extends Action {
     }
 
     async perform() {
-        clearInterval(this.pathUpdater);
-        this.pathIndex = 0;
-        this.pathUpdater = setInterval(this.updatePosition.bind(this), 100);
+        return new Promise((resolve, reject) => {
+            async function updateSourcePosition(dt) {
+                if (this.pathIndex === this.path.length) {
+                    this.pathUpdater = null;
+                    resolve();
+                    return;
+                }
+
+                const nextPosition = this.path[this.pathIndex++];
+                await this.source.moveTo(nextPosition, 250);
+
+                requestAnimationFrame(updateSourcePosition.bind(this));
+            }
+
+            this.pathIndex = 0;
+            requestAnimationFrame(updateSourcePosition.bind(this));
+        });
     }
 
     async canPerform() {
@@ -35,16 +49,5 @@ export class MovementAction extends Action {
         );
 
         return this.path && this.path.length;
-    }
-
-    updatePosition() {
-        if (this.pathIndex === this.path.length) {
-            clearInterval(this.pathUpdater);
-            this.pathUpdater = null;
-            return;
-        }
-
-        const currentPosition = this.path[this.pathIndex++];
-        this.source.moveTo(currentPosition);
     }
 }

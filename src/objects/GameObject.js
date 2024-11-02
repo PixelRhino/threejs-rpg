@@ -9,8 +9,14 @@ export class GameObject extends Mesh {
         this.coords = coords;
     }
 
-    moveTo(coords) {
-        this.coords = coords;
-        this.position.set(coords.x + 0.5, coords.y + 0.5, coords.z + 0.5);
+    async moveTo(coords, interval = 0) {
+        return new Promise((resolve, reject) => {
+            this.coords = coords;
+            this.position.set(coords.x + 0.5, coords.y + 0.5, coords.z + 0.5);
+
+            setTimeout(function () {
+                resolve();
+            }, interval);
+        });
     }
 }
