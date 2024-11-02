@@ -1,6 +1,7 @@
-import { Mesh, MeshStandardMaterial, Vector3 } from 'three';
+import { Box3, Mesh, MeshStandardMaterial, Sphere, Vector3 } from 'three';
 import GameEntity from './GameEntity';
 import ResourceManager from '../utils/ResourceManager';
+import GameScene from '../scenes/GameScene';
 
 type KeyboardState = {
     LeftPressed: boolean;
@@ -113,6 +114,14 @@ class PlayerTank extends GameEntity {
 
         this._mesh.add(tankBodyMesh);
         this._mesh.add(tankTurretMesh);
+
+        // create collider for tank
+        const collider = new Box3()
+            .setFromObject(this._mesh)
+            .getBoundingSphere(new Sphere(this._mesh.position.clone()));
+
+        collider.radius *= 0.65;
+        this._collider = collider;
     };
 
     public update = (dt: number) => {
@@ -141,7 +150,32 @@ class PlayerTank extends GameEntity {
             new Vector3(0, 0, 1),
             computedRotation
         );
+
+        // check for solid entity collisions
+        const testingSphere = this._collider?.clone() as Sphere;
+        testingSphere.center.add(computedMovement);
+
+        // search for possible collisions
+        const colliders = GameScene.instance.gameEntities.filter(
+            (e) =>
+                e !== this &&
+                e.collider &&
+                e.collider!.intersectsSphere(testingSphere)
+        );
+
+        if (colliders.length) {
+            return;
+        }
+
         this._mesh.position.add(computedMovement);
+        (this._collider as Sphere).center.add(computedMovement);
+
+        // make the camera follow the tank
+        GameScene.instance.camera.position.set(
+            this._mesh.position.x,
+            this._mesh.position.y,
+            GameScene.instance.camera.position.z
+        );
     };
 }
 

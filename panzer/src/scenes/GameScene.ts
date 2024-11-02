@@ -1,9 +1,6 @@
 import {
-    BoxGeometry,
     Clock,
     HemisphereLight,
-    Mesh,
-    MeshBasicMaterial,
     PerspectiveCamera,
     Scene,
     Vector3,
@@ -13,6 +10,7 @@ import GameEntity from '../entities/GameEntity';
 import GameMap from '../map/GameMap';
 import ResourceManager from '../utils/ResourceManager';
 import PlayerTank from '../entities/PlayerTank';
+import Wall from '../map/Wall';
 
 class GameScene {
     // Singleton pattern
@@ -34,6 +32,19 @@ class GameScene {
     private _gameEntities: GameEntity[] = [];
 
     private _clock: Clock = new Clock();
+
+    // map size
+    private _mapSize: number = 15;
+
+    // expose camera instance
+    public get camera() {
+        return this._camera;
+    }
+
+    // expose list of game entities
+    public get gameEntities() {
+        return this._gameEntities;
+    }
 
     // Private constructor to prevent instantiation
     private constructor() {
@@ -71,12 +82,31 @@ class GameScene {
         window.addEventListener('resize', this.resize, false);
 
         // add game entities
-        const gameMap = new GameMap(new Vector3(0, 0, 0), 15);
+        const gameMap = new GameMap(new Vector3(0, 0, 0), this._mapSize);
         this._gameEntities.push(gameMap);
 
         const playerTank = new PlayerTank(new Vector3(7, 7, 0));
         this._gameEntities.push(playerTank);
+
+        this.createWalls();
     }
+
+    private createWalls = () => {
+        const edge = this._mapSize - 1;
+
+        this._gameEntities.push(new Wall(new Vector3(0, 0, 0)));
+        this._gameEntities.push(new Wall(new Vector3(edge, 0, 0)));
+        this._gameEntities.push(new Wall(new Vector3(edge, edge, 0)));
+        this._gameEntities.push(new Wall(new Vector3(0, edge, 0)));
+
+        // fill in the gaps
+        for (let i = 1; i < edge; i++) {
+            this._gameEntities.push(new Wall(new Vector3(i, 0, 0)));
+            this._gameEntities.push(new Wall(new Vector3(0, i, 0)));
+            this._gameEntities.push(new Wall(new Vector3(edge, i, 0)));
+            this._gameEntities.push(new Wall(new Vector3(i, edge, 0)));
+        }
+    };
 
     public load = async () => {
         // load resources
